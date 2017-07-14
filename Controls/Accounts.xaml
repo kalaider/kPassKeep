@@ -1,0 +1,176 @@
+﻿<UserControl x:Class="kPassKeep.Controls.Accounts"
+             x:Name="AccountsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="10"   />
+            <RowDefinition Height="*"    />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center">
+            <TextBox Text="{Binding FilterText, ElementName=AccountsControl}" Width="200"/>
+            <Border Width="5" BorderBrush="Transparent" />
+            <Button Content="Filter" Click="FilterButton_Click" />
+        </StackPanel>
+
+        <DataGrid Grid.Row="2"
+              AutoGenerateColumns="False"
+              HorizontalAlignment="Stretch"
+              IsReadOnly="True"
+              SelectionMode="Single"
+              SelectedValue="{Binding Selected, ElementName=AccountsControl}"
+              VerticalAlignment="Stretch"
+              ItemsSource="{Binding FilteredAccounts, ElementName=AccountsControl}">
+
+            <DataGrid.Resources>
+
+                <!--
+            
+            Fix ModernUI DataGrid style to return back
+            row background fill with accent color on selection
+            
+            -->
+                <Style TargetType="{x:Type DataGridCell}">
+                    <Setter Property="Background" Value="{DynamicResource DataGridCellBackground}" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type DataGridCell}">
+                                <Grid Background="{TemplateBinding Background}">
+                                    <ContentPresenter VerticalAlignment="Center" />
+                                </Grid>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsSelected" Value="true">
+                                        <Setter Property="Background" Value="{DynamicResource Accent}"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+
+            </DataGrid.Resources>
+
+
+            <!--
+            
+        Columns
+        
+            * Account.Target
+            * Account.Login
+            * Account.Password
+            * Delete
+        
+        Each column has the following format:
+        
+        [[Icon]] Text [[GoTo]] [CopyToClipboard]
+            
+        -->
+
+
+            <DataGrid.Columns >
+
+
+                <!-- "Account.Target" column: [Icon] Text [GoTo] [CopyToClipboard] -->
+
+                <DataGridTemplateColumn Header="Target" Width="2*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*"    />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Button Grid.Column="0" Padding="4,0,4,2" Cursor="Hand">
+                                    <Image Source="{Binding Path=Target.Icon, TargetNullValue={StaticResource DefaultImageSource}, FallbackValue={StaticResource DefaultImageSource}}" Width="16" Height="16" />
+                                </Button>
+
+                                <Button Grid.Column="1" Content="{Binding Path=Target.Title}" HorizontalContentAlignment="Left" />
+
+                                <Button Grid.Column="2" Padding="4,0,4,2" Cursor="Hand" Click="GotoButton_Click">
+                                    <Image Source="{StaticResource GotoImageSource}" Width="16" Height="16" />
+                                </Button>
+
+                                <Button Grid.Column="3" Padding="4,0,4,2" Cursor="Hand" Click="TargetToClipboardButton_Click">
+                                    <Image Source="{StaticResource ClipboardImageSource}" Width="16" Height="16" />
+                                </Button>
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+
+                <!-- "Account.Login" column -->
+
+                <DataGridTemplateColumn Header="Login" Width="1*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid Margin="10,0,10,0">
+
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*"    />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Button Grid.Column="1" Content="{Binding Path=Login.Username}" />
+                                <Button Grid.Column="2" Padding="4,0,4,2" Cursor="Hand" Click="LoginToClipboardButton_Click">
+                                    <Image Source="{StaticResource ClipboardImageSource}" Width="16" Height="16" />
+                                </Button>
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+
+                <!-- "Account.Password" column -->
+
+                <DataGridTemplateColumn Header="Password" Width="1*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid>
+
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*"    />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Button Grid.Column="1" Content="{Binding Path=Password}" />
+                                <Button Grid.Column="2" Padding="4,0,4,2" Cursor="Hand" Click="PasswordToClipboardButton_Click">
+                                    <Image Source="{StaticResource ClipboardImageSource}" Width="16" Height="16" />
+                                </Button>
+                            </Grid>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+
+                <!-- "Delete" column -->
+
+                <DataGridTemplateColumn Header="Delete" Width="Auto">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Button Grid.Column="2" Padding="4,0,4,2" Cursor="Hand" Click="DeleteButton_Click">
+                                    <Image Source="{StaticResource DeleteImageSource}" Width="16" Height="16" />
+                                </Button>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+            </DataGrid.Columns>
+        </DataGrid>
+        
+    </Grid>
+</UserControl>
