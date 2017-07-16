@@ -1,7 +1,7 @@
 *.sdf
 *.opensdf
 *.suo
-*.vcxproj.user
+*.user
 *.aps
 /ipch/*
 /Debug/*
