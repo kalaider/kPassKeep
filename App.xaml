@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mui="http://firstfloorsoftware.com/ModernUI"
              xmlns:converters="clr-namespace:kPassKeep.Converters"
-             StartupUri="MainWindow.xaml">
+             StartupUri="MainWindow.xaml" DispatcherUnhandledException="Application_DispatcherUnhandledException">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

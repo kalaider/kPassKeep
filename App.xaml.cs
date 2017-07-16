@@ -37,5 +37,10 @@ namespace kPassKeep
             Log.Verbose("System information: {@Env}", Environment.GetEnvironmentVariables());
         }
 
+        private void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        {
+            Log.Fatal(e.Exception, "An unhandled exception occurred");
+            e.Handled = false;
+        }
     }
 }
