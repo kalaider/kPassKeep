@@ -40,6 +40,9 @@ namespace kPassKeep.Service
             var title = ExtractTitle(document);
             var description = ExtractDescription(document);
             var icons = await ExtractIcons(document);
+
+            Serilog.Log.Verbose("Extracted {Uri} target title: {Title}, description: {Description}", uriString, title, description);
+
             return new TargetDescription
             {
                 Target = target,
@@ -54,10 +57,13 @@ namespace kPassKeep.Service
             var config = Configuration.Default.WithDefaultLoader();
             try
             {
-                return await BrowsingContext.New(config).OpenAsync(uriString);
+                var doc = await BrowsingContext.New(config).OpenAsync(uriString);
+                Serilog.Log.Verbose("Document {PassedUri} resolved to {ResolvedUri} loaded: {Doc:l}", uriString, doc.DocumentUri, doc.DocumentElement.OuterHtml);
+                return doc;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Serilog.Log.Verbose(ex, "Document {PassedUri} resolved to {ResolvedUri} failed to load");
                 return null;
             }
         }
