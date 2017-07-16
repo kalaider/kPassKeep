@@ -16,6 +16,7 @@ before_build:
 after_build: >
   7z a kPassKeep.zip
   "%APPVEYOR_BUILD_FOLDER%\bin\%CONFIGURATION%\*.dll"
+  "%APPVEYOR_BUILD_FOLDER%\bin\%CONFIGURATION%\kPassKeep.exe.config"
   "%APPVEYOR_BUILD_FOLDER%\bin\%CONFIGURATION%\kPassKeep.exe"
 artifacts:
   - path: kPassKeep.zip
