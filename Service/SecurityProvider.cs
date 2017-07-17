@@ -20,6 +20,12 @@ namespace kPassKeep.Service
         {
             return SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(password));
         }
+
+        public static byte[] Hash(string password, byte[] salt)
+        {
+            return new Rfc2898DeriveBytes(password, salt).GetBytes(32);
+        }
+
         public static bool Match(string password, byte[] hash)
         {
             if (hash == null && password == null)
@@ -33,15 +39,38 @@ namespace kPassKeep.Service
             return Enumerable.SequenceEqual(Hash(password), hash);
         }
 
+        public static bool Match(string password, byte[] hash, byte[] salt)
+        {
+            if (hash == null && password == null)
+            {
+                return true;
+            }
+            if (hash == null || password == null)
+            {
+                return false;
+            }
+            return Enumerable.SequenceEqual(Hash(password, salt), hash);
+        }
+
         public static bool Unlock(AccountGroup g, string password)
         {
             if (!g.IsLocked)
             {
                 return true;
             }
-            if (!Match(password, g.RawAccountGroup.Data))
+            if (g.RawAccountGroup.FormatVersion.Equals(new Version(1, 0, 0)))
             {
-                return false;
+                if (!Match(password, g.RawAccountGroup.PasswordHash))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (!Match(password, g.RawAccountGroup.PasswordHash, g.RawAccountGroup.Salt))
+                {
+                    return false;
+                }
             }
             PersistenceProvider.LoadUnlocked(g,
                 g.RawAccountGroup.RawMembers.Select(e => Decrypt(e.Value, password)));

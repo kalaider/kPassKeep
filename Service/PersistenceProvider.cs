@@ -14,8 +14,11 @@ using kPassKeep.Model;
 
 namespace kPassKeep.Service
 {
+
     public static class PersistenceProvider
     {
+
+        public static readonly Version LatestFormat = new Version(1, 1, 0);
 
         public static AccountGroups Load()
         {
@@ -61,7 +64,15 @@ namespace kPassKeep.Service
             var path = "data\\" + group.Guid.ToString();
             var rawMembers = group.RawAccountGroup.RawMembers;
             var rawMemberGuids = group.RawAccountGroup.RawMembers.Keys;
-            var matchAll = !SecurityProvider.Match(group.Password, group.RawAccountGroup.Data);
+            bool matchAll;
+            if (group.RawAccountGroup.FormatVersion.Equals(new Version(1, 0, 0)))
+            {
+                matchAll = !SecurityProvider.Match(group.Password, group.RawAccountGroup.PasswordHash);
+            }
+            else
+            {
+                matchAll = !SecurityProvider.Match(group.Password, group.RawAccountGroup.PasswordHash, group.RawAccountGroup.Salt);
+            }
             var serializedMembers =
                 group.Logins
                      .Where(l => matchAll
@@ -89,13 +100,30 @@ namespace kPassKeep.Service
             )
                     .Select(e => SecurityProvider.Encrypt(e, group.Password));
 
+            group.RawAccountGroup.FormatVersion = LatestFormat;
+
             if (!String.IsNullOrEmpty(group.Password))
             {
-                group.RawAccountGroup.Data = SecurityProvider.Hash(group.Password);
+                byte[] salt;
+                if (group.RawAccountGroup.Salt == null)
+                {
+                    salt = new byte[32];
+                    var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
+                    rng.GetBytes(salt);
+                    rng.Dispose();
+                }
+                else
+                {
+                    salt = group.RawAccountGroup.Salt;
+                }
+                group.RawAccountGroup.PasswordHash
+                    = SecurityProvider.Hash(group.Password, salt);
+                group.RawAccountGroup.Salt = salt;
             }
             else
             {
-                group.RawAccountGroup.Data = null;
+                group.RawAccountGroup.PasswordHash = null;
+                group.RawAccountGroup.Salt = null;
             }
             foreach (var e in serializedMembers)
             {
@@ -128,7 +156,9 @@ namespace kPassKeep.Service
             SerializableGroup ht = new SerializableGroup();
             ht.name = group.Name;
             ht.descr = group.Description;
-            ht.pass = group.RawAccountGroup.Data;
+            ht.pass = group.RawAccountGroup.PasswordHash;
+            ht.salt = group.RawAccountGroup.Salt;
+            ht.version = group.RawAccountGroup.FormatVersion.ToString();
             ht.members = group.RawAccountGroup.RawMembers.Values.ToArray();
 
             var json = JsonConvert.SerializeObject(ht, Formatting.Indented);
@@ -227,6 +257,14 @@ namespace kPassKeep.Service
             var ht = (SerializableGroup) JsonConvert.DeserializeObject(File.ReadAllText(path), typeof(SerializableGroup));
             g.Name = ht.name;
             g.Description = ht.descr;
+            if (ht.version != null)
+            {
+                g.RawAccountGroup.FormatVersion = Version.Parse(ht.version);
+            }
+            else
+            {
+                g.RawAccountGroup.FormatVersion = new Version(1, 0, 0);
+            }
             foreach (var e in ht.members)
             {
                 g.RawAccountGroup.RawMembers[e.Guid] = e;
@@ -234,7 +272,8 @@ namespace kPassKeep.Service
             if (ht.pass != null)
             {
                 g.IsLocked = true;
-                g.RawAccountGroup.Data = ht.pass;
+                g.RawAccountGroup.PasswordHash = ht.pass;
+                g.RawAccountGroup.Salt = ht.salt;
             }
             else
             {
@@ -349,9 +388,11 @@ namespace kPassKeep.Service
 
     class SerializableGroup
     {
+        public string version;
         public string name;
         public string descr;
         public byte[] pass;
+        public byte[] salt;
         public RawSimpleEntity[] members;
     }
     class SerializableEntity
