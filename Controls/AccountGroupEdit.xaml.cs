@@ -58,6 +58,7 @@ namespace kPassKeep.Controls
             if (r == MessageBoxResult.Yes)
             {
                 AccountGroups.Groups.Remove(Selected);
+                Selected = null;
             }
         }
 
