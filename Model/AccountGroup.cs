@@ -14,6 +14,8 @@ namespace kPassKeep.Model
         }
         public IDictionary<Guid, RawSimpleEntity> RawMembers { get; private set; }
         public Version FormatVersion { get; set; }
+        public byte[] PasswordHash { get; set; }
+        public byte[] Salt { get; set; }
     }
 
     public class ModificationTracker

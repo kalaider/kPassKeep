@@ -367,6 +367,7 @@ namespace kPassKeep.Service
         public string name;
         public string descr;
         public byte[] pass;
+        public byte[] salt;
         public RawSimpleEntity[] members;
     }
     class SerializableEntity
