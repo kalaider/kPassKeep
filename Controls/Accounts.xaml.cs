@@ -103,6 +103,10 @@ namespace kPassKeep.Controls
                     return false;
                 });
             }
+            else
+            {
+                FilteredAccounts = null;
+            }
         }
 
         private void AddMenuItem_Click(object sender, RoutedEventArgs e)
