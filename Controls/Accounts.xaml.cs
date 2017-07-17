@@ -65,6 +65,21 @@ namespace kPassKeep.Controls
 
         private void GroupChanged()
         {
+            /** 
+             *  #13 Target of newly selected account clears when
+             *      group selection changes
+             *  
+             *  Description:
+             *  
+             *      When switching groups, selected account of the last
+             *      selected group loses its Target property.
+             *  
+             *  Solution:
+             *  
+             *      Clear selection on group change.
+             */
+            Selected = null;
+
             if (AccountGroup != null)
             {
                 var itemSourceList = new CollectionViewSource() { Source = AccountGroup.Accounts };
