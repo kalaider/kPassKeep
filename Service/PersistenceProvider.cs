@@ -64,7 +64,15 @@ namespace kPassKeep.Service
             var path = "data\\" + group.Guid.ToString();
             var rawMembers = group.RawAccountGroup.RawMembers;
             var rawMemberGuids = group.RawAccountGroup.RawMembers.Keys;
-            var matchAll = !SecurityProvider.Match(group.Password, group.RawAccountGroup.Data);
+            bool matchAll;
+            if (group.RawAccountGroup.FormatVersion.Equals(new Version(1, 0, 0)))
+            {
+                matchAll = !SecurityProvider.Match(group.Password, group.RawAccountGroup.PasswordHash);
+            }
+            else
+            {
+                matchAll = !SecurityProvider.Match(group.Password, group.RawAccountGroup.PasswordHash, group.RawAccountGroup.Salt);
+            }
             var serializedMembers =
                 group.Logins
                      .Where(l => matchAll
@@ -96,11 +104,26 @@ namespace kPassKeep.Service
 
             if (!String.IsNullOrEmpty(group.Password))
             {
-                group.RawAccountGroup.Data = SecurityProvider.Hash(group.Password);
+                byte[] salt;
+                if (group.RawAccountGroup.Salt == null)
+                {
+                    salt = new byte[32];
+                    var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
+                    rng.GetBytes(salt);
+                    rng.Dispose();
+                }
+                else
+                {
+                    salt = group.RawAccountGroup.Salt;
+                }
+                group.RawAccountGroup.PasswordHash
+                    = SecurityProvider.Hash(group.Password, salt);
+                group.RawAccountGroup.Salt = salt;
             }
             else
             {
-                group.RawAccountGroup.Data = null;
+                group.RawAccountGroup.PasswordHash = null;
+                group.RawAccountGroup.Salt = null;
             }
             foreach (var e in serializedMembers)
             {
@@ -133,7 +156,8 @@ namespace kPassKeep.Service
             SerializableGroup ht = new SerializableGroup();
             ht.name = group.Name;
             ht.descr = group.Description;
-            ht.pass = group.RawAccountGroup.Data;
+            ht.pass = group.RawAccountGroup.PasswordHash;
+            ht.salt = group.RawAccountGroup.Salt;
             ht.version = group.RawAccountGroup.FormatVersion.ToString();
             ht.members = group.RawAccountGroup.RawMembers.Values.ToArray();
 
@@ -248,7 +272,8 @@ namespace kPassKeep.Service
             if (ht.pass != null)
             {
                 g.IsLocked = true;
-                g.RawAccountGroup.Data = ht.pass;
+                g.RawAccountGroup.PasswordHash = ht.pass;
+                g.RawAccountGroup.Salt = ht.salt;
             }
             else
             {
