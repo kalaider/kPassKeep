@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -40,7 +41,7 @@ namespace kPassKeep.Controls
         }
 
         public static readonly DependencyProperty TargetsProperty =
-            DependencyProperty.Register("Targets", typeof(ObservableCollection<Target>), typeof(TargetEdit), new FrameworkPropertyMetadata { DefaultValue = new ObservableCollection<Target>() });
+            DependencyProperty.Register("Targets", typeof(ObservableCollection<Target>), typeof(TargetEdit), new FrameworkPropertyMetadata { DefaultValue = new ObservableCollection<Target>(), PropertyChangedCallback = (d, o) => ((TargetEdit)d).TargetsChanged() });
 
         private TargetDescription TargetDescription
         {
@@ -59,10 +60,66 @@ namespace kPassKeep.Controls
 
         private static readonly DependencyProperty IsIconComboBoxVisibleProperty =
             DependencyProperty.Register("IsIconComboBoxVisible", typeof(bool), typeof(TargetEdit), new PropertyMetadata(false));
-        
+
+        public ICollectionView SortedTargets
+        {
+            get { return (ICollectionView)GetValue(SortedTargetsProperty); }
+            set { SetValue(SortedTargetsProperty, value); }
+        }
+
+        public static readonly DependencyProperty SortedTargetsProperty =
+            DependencyProperty.Register("SortedTargets", typeof(ICollectionView), typeof(TargetEdit), new FrameworkPropertyMetadata { DefaultValue = null });
+
         public TargetEdit()
         {
             InitializeComponent();
+        }
+
+        private void TargetsChanged()
+        {
+            if (Targets == null)
+            {
+                SortedTargets = null;
+                return;
+            }
+            else
+            {
+                var itemSourceList = new CollectionViewSource() { Source = Targets };
+                itemSourceList.SortDescriptions.Add(new SortDescription("Title", ListSortDirection.Ascending));
+                var t = Targets;
+                SortedTargets = itemSourceList.View;
+                foreach (var el in t)
+                {
+                    RegisterTarget(el);
+                }
+                t.CollectionChanged += (s, e) =>
+                {
+                    if (s != t || SortedTargets == null)
+                    {
+                        return;
+                    }
+                    if (e.NewItems != null)
+                    {
+                        foreach (var el in e.NewItems)
+                        {
+                            RegisterTarget((Target)el);
+                        }
+                    }
+                    SortedTargets.Refresh();
+                };
+            }
+        }
+
+        private void RegisterTarget(Target ag)
+        {
+            ag.PropertyChanged += (s2, e2) =>
+            {
+                if (s2 != ag || !"Title".Equals(e2.PropertyName))
+                {
+                    return;
+                }
+                SortedTargets.Refresh();
+            };
         }
 
         private async void LoadButton_Click(object sender, RoutedEventArgs e)

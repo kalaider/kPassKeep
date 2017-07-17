@@ -35,7 +35,7 @@
             <Button Grid.Column="0" Padding="4,0,4,2" Click="LockUnlockGroupButton_Click" IsEnabled="{Binding Selected.IsLocked, ElementName=AccountGroupEditControl, FallbackValue=false}" Cursor="Hand">
                 <Image Source="{StaticResource UnlockImageSource}" Width="16" Height="16" />
             </Button>
-            <ComboBox Grid.Column="1" ItemsSource="{Binding AccountGroups.Groups, ElementName=AccountGroupEditControl}" SelectedItem="{Binding Selected, ElementName=AccountGroupEditControl}">
+            <ComboBox Grid.Column="1" ItemsSource="{Binding SortedGroups, ElementName=AccountGroupEditControl}" SelectedItem="{Binding Selected, ElementName=AccountGroupEditControl}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">

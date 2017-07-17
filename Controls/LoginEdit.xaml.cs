@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -39,11 +40,67 @@ namespace kPassKeep.Controls
         }
 
         public static readonly DependencyProperty AccountGroupProperty =
-            DependencyProperty.Register("AccountGroup", typeof(AccountGroup), typeof(LoginEdit), new FrameworkPropertyMetadata { DefaultValue = null });
-        
+            DependencyProperty.Register("AccountGroup", typeof(AccountGroup), typeof(LoginEdit), new FrameworkPropertyMetadata { DefaultValue = null, PropertyChangedCallback = (d, o) => ((LoginEdit)d).AccountGroupChanged() });
+
+        public ICollectionView SortedLogins
+        {
+            get { return (ICollectionView)GetValue(SortedLoginsProperty); }
+            set { SetValue(SortedLoginsProperty, value); }
+        }
+
+        public static readonly DependencyProperty SortedLoginsProperty =
+            DependencyProperty.Register("SortedLogins", typeof(ICollectionView), typeof(LoginEdit), new FrameworkPropertyMetadata { DefaultValue = null });
+
         public LoginEdit()
         {
             InitializeComponent();
+        }
+
+        private void AccountGroupChanged()
+        {
+            if (AccountGroup == null)
+            {
+                SortedLogins = null;
+                return;
+            }
+            else
+            {
+                var itemSourceList = new CollectionViewSource() { Source = AccountGroup.Logins };
+                itemSourceList.SortDescriptions.Add(new SortDescription("Username", ListSortDirection.Ascending));
+                var l = AccountGroup.Logins;
+                SortedLogins = itemSourceList.View;
+                foreach (var el in l)
+                {
+                    RegisterLogin(el);
+                }
+                l.CollectionChanged += (s, e) =>
+                {
+                    if (s != l || SortedLogins == null)
+                    {
+                        return;
+                    }
+                    if (e.NewItems != null)
+                    {
+                        foreach (var el in e.NewItems)
+                        {
+                            RegisterLogin((Login)el);
+                        }
+                    }
+                    SortedLogins.Refresh();
+                };
+            }
+        }
+
+        private void RegisterLogin(Login ag)
+        {
+            ag.PropertyChanged += (s2, e2) =>
+            {
+                if (s2 != ag || !"Username".Equals(e2.PropertyName))
+                {
+                    return;
+                }
+                SortedLogins.Refresh();
+            };
         }
 
         private void AddLoginButton_Click(object sender, RoutedEventArgs e)

@@ -79,7 +79,7 @@
 
                 <!-- "Account.Target" column: [Icon] Text [GoTo] [CopyToClipboard] -->
 
-                <DataGridTemplateColumn Header="Target" Width="2*">
+                <DataGridTemplateColumn Header="Target" Width="2*" SortMemberPath="Target.Title" CanUserSort="True">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Grid>
@@ -111,7 +111,7 @@
 
                 <!-- "Account.Login" column -->
 
-                <DataGridTemplateColumn Header="Login" Width="1*">
+                <DataGridTemplateColumn Header="Login" Width="1*" SortMemberPath="Login.Username" CanUserSort="True">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Grid Margin="10,0,10,0">
@@ -134,7 +134,7 @@
 
                 <!-- "Account.Password" column -->
 
-                <DataGridTemplateColumn Header="Password" Width="1*">
+                <DataGridTemplateColumn Header="Password" Width="1*" SortMemberPath="Password" CanUserSort="True">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Grid>
@@ -157,7 +157,7 @@
 
                 <!-- "Delete" column -->
 
-                <DataGridTemplateColumn Header="Delete" Width="Auto">
+                <DataGridTemplateColumn Header="Delete" Width="Auto" CanUserSort="False">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
