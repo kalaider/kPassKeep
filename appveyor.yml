@@ -13,6 +13,7 @@ build:
 # Retain the NuGet package cache between builds.
 cache:
   - C:\Users\appveyor\AppData\Local\NuGet\Cache
+  - C:\Users\appveyor\.nuget\packages
   
 before_build:
   - nuget restore
