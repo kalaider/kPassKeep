@@ -28,7 +28,92 @@
             <BitmapImage x:Key="LockImageSource"      UriSource="img/lock.png"      />
             <BitmapImage x:Key="UnlockImageSource"    UriSource="img/unlock.png"    />
             <BitmapImage x:Key="RestoreImageSource"   UriSource="img/restore.png"   />
-            
+
+            <SolidColorBrush x:Key="InputBackgroundDisabled" Color="#dddddd" />
+            <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="#dddddd" />
+
+            <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type TextBoxBase}}">
+                <Setter Property="Background" Value="{DynamicResource InputBackground}"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type TextBoxBase}">
+                            <Border x:Name="Bd"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    Background="{TemplateBinding Background}"
+                                    Padding="{TemplateBinding Padding}"
+                                    SnapsToDevicePixels="true">
+                                <ScrollViewer x:Name="PART_ContentHost" RenderOptions.ClearTypeHint="Enabled"
+                                      SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsEnabled" Value="false">
+                                    <Setter Property="Foreground" Value="{DynamicResource InputTextDisabled}"/>
+                                    <Setter Property="Background" Value="{DynamicResource InputBackgroundDisabled}"/>
+                                </Trigger>
+                                <Trigger Property="IsReadOnly" Value="true">
+                                    <Setter Property="Foreground" Value="{DynamicResource InputTextDisabled}"/>
+                                </Trigger>
+                                <Trigger Property="IsFocused" Value="true">
+                                    <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                                </Trigger>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsReadOnly" Value="False"/>
+                                        <Condition Property="IsEnabled" Value="True"/>
+                                        <Condition Property="IsMouseOver" Value="True"/>
+                                    </MultiTrigger.Conditions>
+                                    <Setter Property="Background" Value="{DynamicResource InputBackgroundHover}"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource InputBorderHover}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource InputTextHover}"/>
+                                </MultiTrigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style TargetType="{x:Type Button}" BasedOn="{StaticResource BaseButtonStyle}">
+                <Setter Property="Background"
+                        Value="{DynamicResource ButtonBackground}"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ButtonBase}">
+                            <Border Name="Chrome"
+                                        Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        SnapsToDevicePixels="true">
+                                <ContentPresenter Name="Presenter" Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          RecognizesAccessKey="True"
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsEnabled" Value="false">
+                                    <Setter Property="Foreground" Value="{DynamicResource ButtonTextDisabled}"/>
+                                    <Setter Property="Background" Value="{DynamicResource ButtonBackgroundDisabled}"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="{DynamicResource ButtonBackgroundHover}" />
+                                    <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderHover}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource ButtonTextHover}"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter Property="Background" Value="{DynamicResource ButtonBackgroundPressed}" />
+                                    <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderPressed}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource ButtonTextPressed}"/>
+                                </Trigger>
+                                <Trigger Property="IsFocused" Value="true">
+                                    <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>
