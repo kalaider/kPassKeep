@@ -29,8 +29,8 @@
             <BitmapImage x:Key="UnlockImageSource"    UriSource="img/unlock.png"    />
             <BitmapImage x:Key="RestoreImageSource"   UriSource="img/restore.png"   />
 
-            <SolidColorBrush x:Key="InputBackgroundDisabled" Color="#dddddd" />
-            <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="#dddddd" />
+            <SolidColorBrush x:Key="InputBackgroundDisabled" Color="#eeeeee" />
+            <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="#eeeeee" />
 
             <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type TextBoxBase}}">
                 <Setter Property="Background" Value="{DynamicResource InputBackground}"/>
