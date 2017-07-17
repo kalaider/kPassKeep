@@ -32,7 +32,7 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <ComboBox Grid.Column="1" ItemsSource="{Binding SortedLogins, ElementName=LoginEditControl}" SelectedItem="{Binding Selected, ElementName=LoginEditControl}">
+            <ComboBox Grid.Column="1" ItemsSource="{Binding SortedLogins, ElementName=LoginEditControl}" SelectedItem="{Binding Selected, ElementName=LoginEditControl}" IsEnabled="{Binding AccountGroup.Logins.Count, ElementName=LoginEditControl}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding Path=Username}" />

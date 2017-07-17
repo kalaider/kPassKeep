@@ -39,7 +39,7 @@
                 <ColumnDefinition Width="*"    />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <ComboBox Grid.Column="1" ItemsSource="{Binding SortedTargets, ElementName=TargetEditControl}" SelectedItem="{Binding Selected, ElementName=TargetEditControl}" SelectionChanged="TargetComboBox_SelectionChanged">
+            <ComboBox Grid.Column="1" ItemsSource="{Binding SortedTargets, ElementName=TargetEditControl}" SelectedItem="{Binding Selected, ElementName=TargetEditControl}" SelectionChanged="TargetComboBox_SelectionChanged" IsEnabled="{Binding Targets.Count, ElementName=TargetEditControl}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
