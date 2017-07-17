@@ -11,7 +11,7 @@
                 <ResourceDictionary Source="/FirstFloor.ModernUI;component/Assets/ModernUI.Light.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             
-            <Rectangle x:Key="WindowBackgroundContent" x:Shared="false" Fill="{DynamicResource Accent}" Height="32" VerticalAlignment="Top" />
+            <Rectangle x:Key="WindowBackgroundContent" x:Shared="false" Fill="{DynamicResource Accent}" Height="24" VerticalAlignment="Top" />
 
             <converters:NegateConverter           x:Key="NegateConverter"           />
             <converters:NullToBoolConverter       x:Key="NullToBoolConverter"       />
