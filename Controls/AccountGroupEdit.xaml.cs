@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -30,7 +31,7 @@ namespace kPassKeep.Controls
         }
 
         public static readonly DependencyProperty AccountGroupsProperty =
-            DependencyProperty.Register("AccountGroups", typeof(AccountGroups), typeof(AccountGroupEdit), new FrameworkPropertyMetadata { DefaultValue = null });
+            DependencyProperty.Register("AccountGroups", typeof(AccountGroups), typeof(AccountGroupEdit), new FrameworkPropertyMetadata { DefaultValue = null, PropertyChangedCallback = (o, d) => ((AccountGroupEdit)o).AccountGroupsChanged() });
 
         public AccountGroup Selected
         {
@@ -41,9 +42,65 @@ namespace kPassKeep.Controls
         public static readonly DependencyProperty SelectedProperty =
             DependencyProperty.Register("Selected", typeof(AccountGroup), typeof(AccountGroupEdit), new FrameworkPropertyMetadata { DefaultValue = null, BindsTwoWayByDefault = true });
 
+        public ICollectionView SortedGroups
+        {
+            get { return (ICollectionView)GetValue(SortedGroupsProperty); }
+            set { SetValue(SortedGroupsProperty, value); }
+        }
+
+        public static readonly DependencyProperty SortedGroupsProperty =
+            DependencyProperty.Register("SortedGroups", typeof(ICollectionView), typeof(AccountGroupEdit), new FrameworkPropertyMetadata { DefaultValue = null });
+
         public AccountGroupEdit()
         {
             InitializeComponent();
+        }
+
+        private void AccountGroupsChanged()
+        {
+            if (AccountGroups == null)
+            {
+                SortedGroups = null;
+                return;
+            }
+            else
+            {
+                var itemSourceList = new CollectionViewSource() { Source = AccountGroups.Groups };
+                itemSourceList.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
+                var g = AccountGroups.Groups;
+                SortedGroups = itemSourceList.View;
+                foreach (var el in g)
+                {
+                    RegisterGroup(el);
+                }
+                g.CollectionChanged += (s, e) =>
+                {
+                    if (s != g || SortedGroups == null)
+                    {
+                        return;
+                    }
+                    if (e.NewItems != null)
+                    {
+                        foreach (var el in e.NewItems)
+                        {
+                            RegisterGroup((AccountGroup)el);
+                        }
+                    }
+                    SortedGroups.Refresh();
+                };
+            }
+        }
+
+        private void RegisterGroup(AccountGroup ag)
+        {
+            ag.PropertyChanged += (s2, e2) =>
+            {
+                if (s2 != ag || !"Name".Equals(e2.PropertyName))
+                {
+                    return;
+                }
+                SortedGroups.Refresh();
+            };
         }
 
         private void DeleteGroupButton_Click(object sender, RoutedEventArgs e)
