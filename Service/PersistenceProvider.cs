@@ -14,8 +14,11 @@ using kPassKeep.Model;
 
 namespace kPassKeep.Service
 {
+
     public static class PersistenceProvider
     {
+
+        public static readonly Version LatestFormat = new Version(1, 1, 0);
 
         public static AccountGroups Load()
         {
@@ -89,6 +92,8 @@ namespace kPassKeep.Service
             )
                     .Select(e => SecurityProvider.Encrypt(e, group.Password));
 
+            group.RawAccountGroup.FormatVersion = LatestFormat;
+
             if (!String.IsNullOrEmpty(group.Password))
             {
                 group.RawAccountGroup.Data = SecurityProvider.Hash(group.Password);
@@ -129,6 +134,7 @@ namespace kPassKeep.Service
             ht.name = group.Name;
             ht.descr = group.Description;
             ht.pass = group.RawAccountGroup.Data;
+            ht.version = group.RawAccountGroup.FormatVersion.ToString();
             ht.members = group.RawAccountGroup.RawMembers.Values.ToArray();
 
             var json = JsonConvert.SerializeObject(ht, Formatting.Indented);
@@ -227,6 +233,14 @@ namespace kPassKeep.Service
             var ht = (SerializableGroup) JsonConvert.DeserializeObject(File.ReadAllText(path), typeof(SerializableGroup));
             g.Name = ht.name;
             g.Description = ht.descr;
+            if (ht.version != null)
+            {
+                g.RawAccountGroup.FormatVersion = Version.Parse(ht.version);
+            }
+            else
+            {
+                g.RawAccountGroup.FormatVersion = new Version(1, 0, 0);
+            }
             foreach (var e in ht.members)
             {
                 g.RawAccountGroup.RawMembers[e.Guid] = e;
@@ -349,6 +363,7 @@ namespace kPassKeep.Service
 
     class SerializableGroup
     {
+        public string version;
         public string name;
         public string descr;
         public byte[] pass;

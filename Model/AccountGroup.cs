@@ -13,6 +13,7 @@ namespace kPassKeep.Model
             RawMembers = new Dictionary<Guid, RawSimpleEntity>();
         }
         public IDictionary<Guid, RawSimpleEntity> RawMembers { get; private set; }
+        public Version FormatVersion { get; set; }
     }
 
     public class ModificationTracker
@@ -38,6 +39,7 @@ namespace kPassKeep.Model
         {
             ModificationTracker = new ModificationTracker();
             RawAccountGroup = new RawAccountGroup();
+            RawAccountGroup.FormatVersion = kPassKeep.Service.PersistenceProvider.LatestFormat;
             RawAccountGroup.Guid = Guid;
         }
 
