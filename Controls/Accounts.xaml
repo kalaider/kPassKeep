@@ -15,7 +15,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center">
-            <TextBox Text="{Binding FilterText, ElementName=AccountsControl}" Width="200"/>
+            <TextBox Text="{Binding FilterText, ElementName=AccountsControl}" Width="200" KeyDown="TextBox_KeyDown"/>
             <Border Width="5" BorderBrush="Transparent" />
             <Button Content="Filter" Click="FilterButton_Click" />
         </StackPanel>
