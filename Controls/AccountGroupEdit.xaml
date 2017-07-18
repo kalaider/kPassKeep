@@ -64,6 +64,15 @@
             </Button>
         </Grid>
         <TextBox Grid.Column="2" Grid.Row="3" Text="{Binding Selected.Name, ElementName=AccountGroupEditControl}"     IsEnabled="{Binding Selected.IsLocked, Converter={StaticResource NegateConverter}, ElementName=AccountGroupEditControl, FallbackValue=false}" />
-        <TextBox Grid.Column="2" Grid.Row="5" Text="{Binding Selected.Password, ElementName=AccountGroupEditControl}" IsEnabled="{Binding Selected.IsLocked, Converter={StaticResource NegateConverter}, ElementName=AccountGroupEditControl, FallbackValue=false}" />
+        <Grid Grid.Column="2" Grid.Row="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"    />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox Grid.Column="0" Text="{Binding Selected.Password, ElementName=AccountGroupEditControl}" IsEnabled="false" />
+            <Button Grid.Column="1" Padding="4,0,4,2" Click="EditPasswordButton_Click" IsEnabled="{Binding Selected.IsLocked, ElementName=AccountGroupEditControl, Converter={StaticResource NegateConverter}, FallbackValue=false}" Cursor="Hand">
+                <Image Source="{StaticResource EditImageSource}" Width="16" Height="16" />
+            </Button>
+        </Grid>
     </Grid>
 </UserControl>

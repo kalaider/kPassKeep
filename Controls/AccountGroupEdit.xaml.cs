@@ -127,6 +127,29 @@ namespace kPassKeep.Controls
             Selected = group;
         }
 
+        private void EditPasswordButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Selected == null || Selected.IsLocked)
+            {
+                return;
+            }
+            string pass;
+            while (true)
+            {
+                var r = ShowInputDialogWithConfirmation("Enter passphrase", "Enter passphrase", out pass, Window.GetWindow(this));
+
+                if (r == MessageBoxResult.OK)
+                {
+                    Selected.Password = pass;
+                    break;
+                }
+                else if (r == MessageBoxResult.Cancel)
+                {
+                    break;
+                }
+            }
+        }
+
         private void LockUnlockGroupButton_Click(object sender, RoutedEventArgs e)
         {
             if (Selected == null || !Selected.IsLocked)
@@ -180,6 +203,69 @@ namespace kPassKeep.Controls
             else
             {
                 input = "";
+            }
+            return dlg.MessageBoxResult;
+        }
+
+        private static MessageBoxResult ShowInputDialogWithConfirmation(string text, string title, out string input, Window owner = null)
+        {
+            var dlg = new ModernDialog
+            {
+                Title = title,
+                MinHeight = 0,
+                MinWidth = 0,
+                MaxHeight = 480,
+                MaxWidth = 640,
+            };
+            if (owner != null)
+            {
+                dlg.Owner = owner;
+            }
+
+            dlg.Buttons = GetButtons(dlg);
+
+            var grid = new Grid();
+
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(10) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+            var passwordLabel = new TextBlock(new Run("Password:"));
+            var confirmationLabel = new TextBlock(new Run("Confirmation:"));
+
+            var password = new TextBox();
+            var confirmation = new TextBox();
+
+            Grid.SetColumn(passwordLabel, 0); Grid.SetRow(passwordLabel, 0);
+            Grid.SetColumn(confirmationLabel, 0); Grid.SetRow(confirmationLabel, 1);
+            Grid.SetColumn(password, 2); Grid.SetRow(password, 0);
+            Grid.SetColumn(confirmation, 2); Grid.SetRow(confirmation, 1);
+
+            grid.Children.Add(passwordLabel);
+            grid.Children.Add(password);
+            grid.Children.Add(confirmationLabel);
+            grid.Children.Add(confirmation);
+
+            dlg.Content = grid;
+            password.Focus();
+
+            dlg.ShowDialog();
+
+            if (dlg.MessageBoxResult == MessageBoxResult.OK
+                && String.Equals(password.Text, confirmation.Text))
+            {
+                input = password.Text;
+            }
+            else
+            {
+                input = "";
+            }
+            if (!String.Equals(password.Text, confirmation.Text))
+            {
+                return MessageBoxResult.None;
             }
             return dlg.MessageBoxResult;
         }
