@@ -196,5 +196,17 @@ namespace kPassKeep.Controls
                 System.Windows.Clipboard.SetText(Selected.Password);
             }
         }
+
+        private void TextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Return || e.Key == Key.Enter)
+            {
+                FilterText = ((TextBox)sender).Text;
+                if (FilteredAccounts != null)
+                {
+                    FilteredAccounts.Refresh();
+                }
+            }
+        }
     }
 }
