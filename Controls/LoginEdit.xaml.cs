@@ -109,6 +109,16 @@ namespace kPassKeep.Controls
             {
                 return;
             }
+
+            var existing = AccountGroup.Logins
+                                .Where(l0 => String.Equals("<New Login>", l0.Username))
+                                .FirstOrDefault();
+            if (existing != null)
+            {
+                Selected = existing;
+                return;
+            }
+
             Login l = new Login();
             l.Username = "<New Login>";
             AccountGroup.Logins.Add(l);
