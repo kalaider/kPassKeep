@@ -14,7 +14,8 @@ namespace kPassKeep.Util
             "Encryption/decryption is in progress. It can take some time because " +
             "we need to take actions in order to make brute force attack on " +
             "the provided password much more difficult. An attacker will have to " +
-            "repeat the same actions for each password he/she tries.";
+            "repeat the same actions for each password he/she tries.\n\n" +
+            "The window may become unresponsive for some time.";
 
         public static T WithLongActionWarning<T>(Window owner, string title, string text, Func<T> action)
         {
