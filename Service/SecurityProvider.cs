@@ -12,34 +12,36 @@ using kPassKeep.Model;
 
 namespace kPassKeep.Service
 {
-    public static class SecurityProvider
+    public abstract class SecurityProvider
     {
         private static readonly byte[] SALT = new byte[] { 0x16, 0xdd, 0xfc, 0x30, 0xaf, 0x1d, 0x7b, 0xec, 0x00, 0xfe, 0x07, 0x14, 0x4d, 0xc8, 0x52, 0xfa };
 
-        public static byte[] Hash(string password)
-        {
-            return SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(password));
-        }
+        public static SecurityProvider Latest => new SP();
+        public static SecurityProvider V_1_0 => new SP_V_1_0();
 
-        public static byte[] Hash(string password, byte[] salt)
+        public static SecurityProvider ForVersion(Version version)
         {
-            return new Rfc2898DeriveBytes(password, salt).GetBytes(32);
-        }
-
-        public static bool Match(string password, byte[] hash)
-        {
-            if (hash == null && password == null)
+            if (version < new Version(1, 0, 0))
             {
-                return true;
+                throw new ArgumentException($"First version is 1.0.0, but {version} given");
             }
-            if (hash == null || password == null)
+
+            if (version == new Version(1, 0, 0))
             {
-                return false;
+                return V_1_0;
             }
-            return Enumerable.SequenceEqual(Hash(password), hash);
+
+            return Latest;
         }
 
-        public static bool Match(string password, byte[] hash, byte[] salt)
+        public static bool Unlock(AccountGroup g, string password)
+        {
+            return ForVersion(g.RawAccountGroup.FormatVersion).UnlockGroup(g, password);
+        }
+
+        public abstract byte[] Hash(string password, byte[] salt);
+
+        public bool Match(string password, byte[] hash, byte[] salt)
         {
             if (hash == null && password == null)
             {
@@ -52,25 +54,15 @@ namespace kPassKeep.Service
             return Enumerable.SequenceEqual(Hash(password, salt), hash);
         }
 
-        public static bool Unlock(AccountGroup g, string password)
+        public bool UnlockGroup(AccountGroup g, string password)
         {
             if (!g.IsLocked)
             {
                 return true;
             }
-            if (g.RawAccountGroup.FormatVersion.Equals(new Version(1, 0, 0)))
+            if (!Match(password, g.RawAccountGroup.PasswordHash, g.RawAccountGroup.Salt))
             {
-                if (!Match(password, g.RawAccountGroup.PasswordHash))
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                if (!Match(password, g.RawAccountGroup.PasswordHash, g.RawAccountGroup.Salt))
-                {
-                    return false;
-                }
+                return false;
             }
             PersistenceProvider.LoadUnlocked(g,
                 DecryptAll(g.RawAccountGroup.RawMembers.Values, password));
@@ -80,7 +72,7 @@ namespace kPassKeep.Service
             return true;
         }
 
-        public static IEnumerable<RawSimpleEntity> EncryptAll(
+        public IEnumerable<RawSimpleEntity> EncryptAll(
             IEnumerable<RawSimpleEntity> entities, string password)
         {
             if (String.IsNullOrEmpty(password))
@@ -117,7 +109,7 @@ namespace kPassKeep.Service
             }
         }
 
-        public static IEnumerable<RawSimpleEntity> DecryptAll(
+        public IEnumerable<RawSimpleEntity> DecryptAll(
             IEnumerable<RawSimpleEntity> entities, string password)
         {
             if (String.IsNullOrEmpty(password))
@@ -152,6 +144,22 @@ namespace kPassKeep.Service
                     }
                 }
                 yield return e;
+            }
+        }
+
+        private class SP_V_1_0 : SecurityProvider
+        {
+            public override byte[] Hash(string password, byte[] salt)
+            {
+                return SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(password));
+            }
+        }
+
+        private class SP : SecurityProvider
+        {
+            public override byte[] Hash(string password, byte[] salt)
+            {
+                return new Rfc2898DeriveBytes(password, salt).GetBytes(32);
             }
         }
     }

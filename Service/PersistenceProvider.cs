@@ -64,16 +64,9 @@ namespace kPassKeep.Service
             var path = "data\\" + group.Guid.ToString();
             var rawMembers = group.RawAccountGroup.RawMembers;
             var rawMemberGuids = group.RawAccountGroup.RawMembers.Keys;
-            bool matchAll;
-            if (group.RawAccountGroup.FormatVersion.Equals(new Version(1, 0, 0)))
-            {
-                matchAll = !SecurityProvider.Match(group.Password, group.RawAccountGroup.PasswordHash);
-            }
-            else
-            {
-                matchAll = !SecurityProvider.Match(group.Password, group.RawAccountGroup.PasswordHash, group.RawAccountGroup.Salt);
-            }
-            var serializedMembers = SecurityProvider.EncryptAll
+            bool matchAll = !SecurityProvider.ForVersion(group.RawAccountGroup.FormatVersion)
+                .Match(group.Password, group.RawAccountGroup.PasswordHash, group.RawAccountGroup.Salt);
+            var serializedMembers = SecurityProvider.Latest.EncryptAll
             (
                         group.Logins
                              .Where(l => matchAll
@@ -119,7 +112,7 @@ namespace kPassKeep.Service
                     salt = group.RawAccountGroup.Salt;
                 }
                 group.RawAccountGroup.PasswordHash
-                    = SecurityProvider.Hash(group.Password, salt);
+                    = SecurityProvider.Latest.Hash(group.Password, salt);
                 group.RawAccountGroup.Salt = salt;
             }
             else
