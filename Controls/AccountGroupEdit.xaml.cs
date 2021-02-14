@@ -15,6 +15,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using kPassKeep.Model;
 using kPassKeep.Service;
+using kPassKeep.Util;
 
 namespace kPassKeep.Controls
 {
@@ -163,7 +164,10 @@ namespace kPassKeep.Controls
 
                 if (r == MessageBoxResult.OK)
                 {
-                    if (SecurityProvider.Unlock(Selected, pass))
+                    if (UIHelper.WithLongEncryptionDecryptionWarning(
+                        Window.GetWindow(this),
+                        "Decrypting...",
+                        () => SecurityProvider.Unlock(Selected, pass)))
                     {
                         break;
                     }

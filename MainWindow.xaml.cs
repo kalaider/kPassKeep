@@ -50,7 +50,11 @@ namespace kPassKeep
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            PersistenceProvider.Persist(model.AccountGroups);
+            UIHelper.WithLongEncryptionDecryptionWarning(
+                Window.GetWindow(this),
+                "Saving...",
+                () => PersistenceProvider.Persist(model.AccountGroups)
+            );
         }
 
         private void NewAccountButton_Click(object sender, RoutedEventArgs e)
@@ -175,7 +179,11 @@ namespace kPassKeep
                    "Save or Ignore", MessageBoxButton.YesNoCancel, Window.GetWindow(this));
                 if (r == MessageBoxResult.Yes)
                 {
-                    PersistenceProvider.Persist(model.AccountGroups);
+                    UIHelper.WithLongEncryptionDecryptionWarning(
+                        Window.GetWindow(this),
+                        "Saving...",
+                        () => PersistenceProvider.Persist(model.AccountGroups)
+                    );
                 }
                 else if (r == MessageBoxResult.Cancel)
                 {
