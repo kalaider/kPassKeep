@@ -14,9 +14,9 @@ namespace kPassKeep.Service
 {
     public abstract class SecurityProvider
     {
-        public static SecurityProvider Latest => new SP();
-        public static SecurityProvider V_1_1 => new SP_V_1_1();
-        public static SecurityProvider V_1_0 => new SP_V_1_0();
+        public static SecurityProvider Latest { get; } = new SP();
+        public static SecurityProvider V_1_1 { get; } = new SP_V_1_1();
+        public static SecurityProvider V_1_0 { get; } = new SP_V_1_0();
 
         public static SecurityProvider ForVersion(Version version)
         {
@@ -43,7 +43,24 @@ namespace kPassKeep.Service
             return ForVersion(g.RawAccountGroup.FormatVersion).UnlockGroup(g, password);
         }
 
-        public abstract byte[] Hash(string password, byte[] salt);
+        private IDictionary<Tuple<string, BinaryEquatable>, byte[]> _keyCache
+            = new Dictionary<Tuple<string, BinaryEquatable>, byte[]>();
+
+        public byte[] Hash(string password, byte[] salt)
+        {
+            var key = Tuple.Create(password, new BinaryEquatable(salt.ToArray()));
+
+            if (_keyCache.TryGetValue(key, out var hash))
+            {
+                return hash;
+            }
+            
+            _keyCache[key] = DoHash(password, salt);
+            
+            return _keyCache[key];
+        }
+
+        protected abstract byte[] DoHash(string password, byte[] salt);
 
         public abstract byte[] GetDataSalt(byte[] salt);
 
@@ -152,7 +169,7 @@ namespace kPassKeep.Service
         private class SP_V_1_0 : SecurityProvider
         {
             private static readonly byte[] SALT = new byte[] { 0x16, 0xdd, 0xfc, 0x30, 0xaf, 0x1d, 0x7b, 0xec, 0x00, 0xfe, 0x07, 0x14, 0x4d, 0xc8, 0x52, 0xfa };
-            public override byte[] Hash(string password, byte[] salt)
+            protected override byte[] DoHash(string password, byte[] salt)
             {
                 return SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(password));
             }
@@ -162,7 +179,7 @@ namespace kPassKeep.Service
 
         private class SP_V_1_1 : SP_V_1_0
         {
-            public override byte[] Hash(string password, byte[] salt)
+            protected override byte[] DoHash(string password, byte[] salt)
             {
                 return new Rfc2898DeriveBytes(password, salt).GetBytes(32);
             }
@@ -171,12 +188,43 @@ namespace kPassKeep.Service
         private class SP : SP_V_1_1
         {
             private static readonly int ITERATION_COUNT = 500_000;
-            public override byte[] Hash(string password, byte[] salt)
+            protected override byte[] DoHash(string password, byte[] salt)
             {
                 return new Rfc2898DeriveBytes(password, salt, ITERATION_COUNT).GetBytes(32);
             }
 
             public override byte[] GetDataSalt(byte[] salt) => salt;
+        }
+
+        private class BinaryEquatable : IEquatable<BinaryEquatable>
+        {
+            public BinaryEquatable(byte[] value)
+            {
+                Value = value;
+            }
+
+            public byte[] Value { get; }
+
+            public bool Equals(BinaryEquatable other)
+            {
+                if (ReferenceEquals(null, other)) return false;
+                if (ReferenceEquals(this, other)) return true;
+                return Value.SequenceEqual(other.Value);
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (ReferenceEquals(null, obj)) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                if (obj.GetType() != this.GetType()) return false;
+                return Equals((BinaryEquatable) obj);
+            }
+
+            public override int GetHashCode()
+            {
+                return (Value != null ? (Value as IStructuralEquatable)
+                    .GetHashCode(EqualityComparer<byte>.Default) : 0);
+            }
         }
     }
 }
