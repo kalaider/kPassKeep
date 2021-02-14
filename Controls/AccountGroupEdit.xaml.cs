@@ -136,7 +136,7 @@ namespace kPassKeep.Controls
             string pass;
             while (true)
             {
-                var r = ShowInputDialogWithConfirmation("Enter passphrase", "Enter passphrase", out pass, Window.GetWindow(this));
+                var r = ShowPasswordPromptWithConfirmation("Enter passphrase", "Enter passphrase", out pass, Window.GetWindow(this));
 
                 if (r == MessageBoxResult.OK)
                 {
@@ -159,7 +159,7 @@ namespace kPassKeep.Controls
             string pass;
             while (true)
             {
-                var r = ShowInputDialog("Enter passphrase", "Password required", out pass, Window.GetWindow(this));
+                var r = ShowPasswordPrompt("Enter passphrase", "Password required", out pass, Window.GetWindow(this));
 
                 if (r == MessageBoxResult.OK)
                 {
@@ -175,7 +175,7 @@ namespace kPassKeep.Controls
             }
         }
 
-        private static MessageBoxResult ShowInputDialog(string text, string title, out string input, Window owner = null)
+        private static MessageBoxResult ShowPasswordPrompt(string text, string title, out string input, Window owner = null)
         {
             var dlg = new ModernDialog
             {
@@ -192,13 +192,13 @@ namespace kPassKeep.Controls
             }
 
             dlg.Buttons = GetButtons(dlg);
-            var tb = new TextBox();
+            var tb = new PasswordBox();
             dlg.Content = tb;
             tb.Focus();
             dlg.ShowDialog();
             if (dlg.MessageBoxResult == MessageBoxResult.OK)
             {
-                input = tb.Text;
+                input = tb.Password;
             }
             else
             {
@@ -207,7 +207,7 @@ namespace kPassKeep.Controls
             return dlg.MessageBoxResult;
         }
 
-        private static MessageBoxResult ShowInputDialogWithConfirmation(string text, string title, out string input, Window owner = null)
+        private static MessageBoxResult ShowPasswordPromptWithConfirmation(string text, string title, out string input, Window owner = null)
         {
             var dlg = new ModernDialog
             {
@@ -236,8 +236,8 @@ namespace kPassKeep.Controls
             var passwordLabel = new TextBlock(new Run("Password:"));
             var confirmationLabel = new TextBlock(new Run("Confirmation:"));
 
-            var password = new TextBox();
-            var confirmation = new TextBox();
+            var password = new PasswordBox();
+            var confirmation = new PasswordBox();
 
             Grid.SetColumn(passwordLabel, 0); Grid.SetRow(passwordLabel, 0);
             Grid.SetColumn(confirmationLabel, 0); Grid.SetRow(confirmationLabel, 1);
@@ -254,16 +254,22 @@ namespace kPassKeep.Controls
 
             dlg.ShowDialog();
 
-            if (dlg.MessageBoxResult == MessageBoxResult.OK
-                && String.Equals(password.Text, confirmation.Text))
+            if (dlg.MessageBoxResult == MessageBoxResult.Cancel)
             {
-                input = password.Text;
+                input = "";
+                return dlg.MessageBoxResult;
+            }
+
+            if (dlg.MessageBoxResult == MessageBoxResult.OK
+                && String.Equals(password.Password, confirmation.Password))
+            {
+                input = password.Password;
             }
             else
             {
                 input = "";
             }
-            if (!String.Equals(password.Text, confirmation.Text))
+            if (!String.Equals(password.Password, confirmation.Password))
             {
                 return MessageBoxResult.None;
             }
