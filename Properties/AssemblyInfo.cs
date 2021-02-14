@@ -7,11 +7,11 @@ using System.Windows.Media;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("kPassKeep")]
-[assembly: AssemblyDescription("Keep your passwords in safe place")]
+[assembly: AssemblyDescription("Keep your passwords in a safe place")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("kalaider")]
 [assembly: AssemblyProduct("kPassKeep")]
-[assembly: AssemblyCopyright("Copyright © kalaider 2017")]
+[assembly: AssemblyCopyright("Copyright © kalaider 2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -37,5 +37,5 @@ using System.Windows.Media;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.1.0.0")]
-[assembly: AssemblyFileVersion("1.1.0.0")]
+[assembly: AssemblyVersion("1.2.0.0")]
+[assembly: AssemblyFileVersion("1.2.0.0")]
