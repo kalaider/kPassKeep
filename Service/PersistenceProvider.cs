@@ -73,32 +73,34 @@ namespace kPassKeep.Service
             {
                 matchAll = !SecurityProvider.Match(group.Password, group.RawAccountGroup.PasswordHash, group.RawAccountGroup.Salt);
             }
-            var serializedMembers =
-                group.Logins
-                     .Where(l => matchAll
-                              || modifiedMembers.Contains(l.Guid)
-                              || !rawMembers.ContainsKey(l.Guid))
-                     .Select(Persist)
-                     .Concat
+            var serializedMembers = SecurityProvider.EncryptAll
             (
-                group.Accounts
-                     .Select(a => a.Target)
-                     .Where(t => t != null)
-                     .Distinct()
-                     .Where(t => matchAll
-                              || modifiedMembers.Contains(t.Guid)
-                              || !rawMembers.ContainsKey(t.Guid))
-                     .Select(Persist)
-            )
-                    .Concat
-            (
-                group.Accounts
-                     .Where(a => matchAll
-                              || modifiedMembers.Contains(a.Guid)
-                              || !rawMembers.ContainsKey(a.Guid))
-                     .Select(Persist)
-            )
-                    .Select(e => SecurityProvider.Encrypt(e, group.Password));
+                        group.Logins
+                             .Where(l => matchAll
+                                      || modifiedMembers.Contains(l.Guid)
+                                      || !rawMembers.ContainsKey(l.Guid))
+                             .Select(Persist)
+                             .Concat
+                    (
+                        group.Accounts
+                             .Select(a => a.Target)
+                             .Where(t => t != null)
+                             .Distinct()
+                             .Where(t => matchAll
+                                      || modifiedMembers.Contains(t.Guid)
+                                      || !rawMembers.ContainsKey(t.Guid))
+                             .Select(Persist)
+                    )
+                            .Concat
+                    (
+                        group.Accounts
+                             .Where(a => matchAll
+                                      || modifiedMembers.Contains(a.Guid)
+                                      || !rawMembers.ContainsKey(a.Guid))
+                             .Select(Persist)
+                    ),
+                    group.Password
+            );
 
             group.RawAccountGroup.FormatVersion = LatestFormat;
 

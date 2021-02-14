@@ -73,62 +73,86 @@ namespace kPassKeep.Service
                 }
             }
             PersistenceProvider.LoadUnlocked(g,
-                g.RawAccountGroup.RawMembers.Select(e => Decrypt(e.Value, password)));
+                DecryptAll(g.RawAccountGroup.RawMembers.Values, password));
             g.IsLocked = false;
             g.Password = password;
             g.ModificationTracker.ModifiedElements.Clear();
             return true;
         }
 
-        public static RawSimpleEntity Encrypt(RawSimpleEntity entity, string password)
+        public static IEnumerable<RawSimpleEntity> EncryptAll(
+            IEnumerable<RawSimpleEntity> entities, string password)
         {
             if (String.IsNullOrEmpty(password))
             {
-                return entity;
-            }
-            using (var ms = new MemoryStream())
-            {
-                Rijndael rijndael = Rijndael.Create();
-                Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(password, SALT);
-                rijndael.Key = pdb.GetBytes(32);
-                rijndael.GenerateIV();
-                using (var cs = new CryptoStream(ms, rijndael.CreateEncryptor(), CryptoStreamMode.Write))
+                foreach (var entity in entities)
                 {
-                    cs.Write(entity.Data, 0, entity.Data.Length);
+                    yield return entity;
                 }
-                var data = ms.ToArray();
-                entity.Data = new byte[data.Length + 16];
-                Array.Copy(rijndael.IV, entity.Data, 16);
-                Array.Copy(data, 0, entity.Data, 16, data.Length);
             }
-            return entity;
+
+            Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(password, SALT);
+
+            var key = pdb.GetBytes(32);
+
+            foreach (var entity in entities)
+            {
+                RawSimpleEntity e = new RawSimpleEntity();
+                e.Guid = entity.Guid;
+                using (var ms = new MemoryStream())
+                {
+                    Rijndael rijndael = Rijndael.Create();
+                    rijndael.Key = key;
+                    rijndael.GenerateIV();
+                    using (var cs = new CryptoStream(ms, rijndael.CreateEncryptor(), CryptoStreamMode.Write))
+                    {
+                        cs.Write(entity.Data, 0, entity.Data.Length);
+                    }
+                    var data = ms.ToArray();
+                    e.Data = new byte[data.Length + 16];
+                    Array.Copy(rijndael.IV, e.Data, 16);
+                    Array.Copy(data, 0, e.Data, 16, data.Length);
+                }
+                yield return e;
+            }
         }
 
-        public static RawSimpleEntity Decrypt(RawSimpleEntity entity, string password)
+        public static IEnumerable<RawSimpleEntity> DecryptAll(
+            IEnumerable<RawSimpleEntity> entities, string password)
         {
             if (String.IsNullOrEmpty(password))
             {
-                return entity;
-            }
-            RawSimpleEntity e = new RawSimpleEntity();
-            e.Guid = entity.Guid;
-            using (var ms = new MemoryStream(entity.Data))
-            {
-                Rijndael rijndael = Rijndael.Create();
-                Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(password, SALT);
-                rijndael.Key = pdb.GetBytes(32);
-                byte[] iv = new byte[16];
-                ms.Read(iv, 0, 16);
-                rijndael.IV = iv;
-                var buffer = new byte[entity.Data.Length - 16];
-                using (var cs = new CryptoStream(ms, rijndael.CreateDecryptor(), CryptoStreamMode.Read))
+                foreach (var entity in entities)
                 {
-                    var read = cs.Read(buffer, 0, buffer.Length);
-                    e.Data = new byte[read];
-                    Array.Copy(buffer, e.Data, read);
+                    yield return entity;
                 }
             }
-            return e;
+
+            Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(password, SALT);
+
+            var key = pdb.GetBytes(32);
+
+            foreach (var entity in entities)
+            {
+                RawSimpleEntity e = new RawSimpleEntity();
+                e.Guid = entity.Guid;
+                using (var ms = new MemoryStream(entity.Data))
+                {
+                    Rijndael rijndael = Rijndael.Create();
+                    rijndael.Key = key;
+                    byte[] iv = new byte[16];
+                    ms.Read(iv, 0, 16);
+                    rijndael.IV = iv;
+                    var buffer = new byte[entity.Data.Length - 16];
+                    using (var cs = new CryptoStream(ms, rijndael.CreateDecryptor(), CryptoStreamMode.Read))
+                    {
+                        var read = cs.Read(buffer, 0, buffer.Length);
+                        e.Data = new byte[read];
+                        Array.Copy(buffer, e.Data, read);
+                    }
+                }
+                yield return e;
+            }
         }
     }
 }
