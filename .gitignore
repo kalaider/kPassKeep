@@ -11,3 +11,5 @@
 /packages/*
 /obj/*
 .vs/
+riderModule.iml
+/_ReSharper.Caches/
