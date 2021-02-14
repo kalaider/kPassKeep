@@ -177,7 +177,7 @@ namespace kPassKeep.Controls
         {
             if (Selected != null && Selected.Target != null && Selected.Target.Uri != null)
             {
-                System.Windows.Clipboard.SetText(Selected.Target.Uri);
+                System.Windows.Clipboard.SetDataObject(Selected.Target.Uri);
             }
         }
 
@@ -185,7 +185,7 @@ namespace kPassKeep.Controls
         {
             if (Selected != null && Selected.Login != null && Selected.Login.Username != null)
             {
-                System.Windows.Clipboard.SetText(Selected.Login.Username);
+                System.Windows.Clipboard.SetDataObject(Selected.Login.Username);
             }
         }
 
@@ -193,7 +193,7 @@ namespace kPassKeep.Controls
         {
             if (Selected != null && Selected.Password != null)
             {
-                System.Windows.Clipboard.SetText(Selected.Password);
+                System.Windows.Clipboard.SetDataObject(Selected.Password);
             }
         }
 
