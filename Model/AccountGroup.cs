@@ -16,6 +16,7 @@ namespace kPassKeep.Model
         public Version FormatVersion { get; set; }
         public byte[] PasswordHash { get; set; }
         public byte[] Salt { get; set; }
+        public byte[] DataSalt { get; set; }
     }
 
     public class ModificationTracker

@@ -14,9 +14,8 @@ namespace kPassKeep.Service
 {
     public abstract class SecurityProvider
     {
-        private static readonly byte[] SALT = new byte[] { 0x16, 0xdd, 0xfc, 0x30, 0xaf, 0x1d, 0x7b, 0xec, 0x00, 0xfe, 0x07, 0x14, 0x4d, 0xc8, 0x52, 0xfa };
-
         public static SecurityProvider Latest => new SP();
+        public static SecurityProvider V_1_1 => new SP_V_1_1();
         public static SecurityProvider V_1_0 => new SP_V_1_0();
 
         public static SecurityProvider ForVersion(Version version)
@@ -31,6 +30,11 @@ namespace kPassKeep.Service
                 return V_1_0;
             }
 
+            if (version == new Version(1, 1, 0))
+            {
+                return V_1_1;
+            }
+
             return Latest;
         }
 
@@ -40,6 +44,8 @@ namespace kPassKeep.Service
         }
 
         public abstract byte[] Hash(string password, byte[] salt);
+
+        public abstract byte[] GetDataSalt(byte[] salt);
 
         public bool Match(string password, byte[] hash, byte[] salt)
         {
@@ -65,7 +71,7 @@ namespace kPassKeep.Service
                 return false;
             }
             PersistenceProvider.LoadUnlocked(g,
-                DecryptAll(g.RawAccountGroup.RawMembers.Values, password));
+                DecryptAll(g.RawAccountGroup.RawMembers.Values, password, g.RawAccountGroup.DataSalt));
             g.IsLocked = false;
             g.Password = password;
             g.ModificationTracker.ModifiedElements.Clear();
@@ -73,7 +79,7 @@ namespace kPassKeep.Service
         }
 
         public IEnumerable<RawSimpleEntity> EncryptAll(
-            IEnumerable<RawSimpleEntity> entities, string password)
+            IEnumerable<RawSimpleEntity> entities, string password, byte[] salt)
         {
             if (String.IsNullOrEmpty(password))
             {
@@ -83,7 +89,7 @@ namespace kPassKeep.Service
                 }
             }
 
-            Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(password, SALT);
+            Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(password, GetDataSalt(salt));
 
             var key = pdb.GetBytes(32);
 
@@ -110,7 +116,7 @@ namespace kPassKeep.Service
         }
 
         public IEnumerable<RawSimpleEntity> DecryptAll(
-            IEnumerable<RawSimpleEntity> entities, string password)
+            IEnumerable<RawSimpleEntity> entities, string password, byte[] salt)
         {
             if (String.IsNullOrEmpty(password))
             {
@@ -120,7 +126,7 @@ namespace kPassKeep.Service
                 }
             }
 
-            Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(password, SALT);
+            Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(password, GetDataSalt(salt));
 
             var key = pdb.GetBytes(32);
 
@@ -149,18 +155,32 @@ namespace kPassKeep.Service
 
         private class SP_V_1_0 : SecurityProvider
         {
+            private static readonly byte[] SALT = new byte[] { 0x16, 0xdd, 0xfc, 0x30, 0xaf, 0x1d, 0x7b, 0xec, 0x00, 0xfe, 0x07, 0x14, 0x4d, 0xc8, 0x52, 0xfa };
             public override byte[] Hash(string password, byte[] salt)
             {
                 return SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(password));
             }
+
+            public override byte[] GetDataSalt(byte[] salt) => SALT;
         }
 
-        private class SP : SecurityProvider
+        private class SP_V_1_1 : SP_V_1_0
         {
             public override byte[] Hash(string password, byte[] salt)
             {
                 return new Rfc2898DeriveBytes(password, salt).GetBytes(32);
             }
+        }
+
+        private class SP : SP_V_1_1
+        {
+            private static readonly int ITERATION_COUNT = 500_000;
+            public override byte[] Hash(string password, byte[] salt)
+            {
+                return new Rfc2898DeriveBytes(password, salt, ITERATION_COUNT).GetBytes(32);
+            }
+
+            public override byte[] GetDataSalt(byte[] salt) => salt;
         }
     }
 }

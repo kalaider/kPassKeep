@@ -121,6 +121,7 @@
     <Compile Include="Service\PersistenceProvider.cs" />
     <Compile Include="Service\SecurityProvider.cs" />
     <Compile Include="Util\IEnumerableExt.cs" />
+    <Compile Include="Util\UIHelper.cs" />
     <Compile Include="Validators\LoginUniqueValidator.cs" />
     <Page Include="Controls\AccountGroupEdit.xaml">
       <SubType>Designer</SubType>

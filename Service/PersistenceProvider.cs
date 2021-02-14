@@ -18,7 +18,7 @@ namespace kPassKeep.Service
     public static class PersistenceProvider
     {
 
-        public static readonly Version LatestFormat = new Version(1, 1, 0);
+        public static readonly Version LatestFormat = new Version(1, 2, 0);
 
         public static AccountGroups Load()
         {
@@ -64,8 +64,50 @@ namespace kPassKeep.Service
             var path = "data\\" + group.Guid.ToString();
             var rawMembers = group.RawAccountGroup.RawMembers;
             var rawMemberGuids = group.RawAccountGroup.RawMembers.Keys;
-            bool matchAll = !SecurityProvider.ForVersion(group.RawAccountGroup.FormatVersion)
+            bool matchAll = group.RawAccountGroup.FormatVersion != LatestFormat ||
+                !SecurityProvider.ForVersion(group.RawAccountGroup.FormatVersion)
                 .Match(group.Password, group.RawAccountGroup.PasswordHash, group.RawAccountGroup.Salt);
+
+            group.RawAccountGroup.FormatVersion = LatestFormat;
+
+            if (!String.IsNullOrEmpty(group.Password))
+            {
+                byte[] salt;
+                byte[] dataSalt;
+                if (group.RawAccountGroup.Salt == null || matchAll)
+                {
+                    salt = new byte[32];
+                    var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
+                    rng.GetBytes(salt);
+                    rng.Dispose();
+                }
+                else
+                {
+                    salt = group.RawAccountGroup.Salt;
+                }
+                if (group.RawAccountGroup.DataSalt == null || matchAll)
+                {
+                    dataSalt = new byte[32];
+                    var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
+                    rng.GetBytes(dataSalt);
+                    rng.Dispose();
+                }
+                else
+                {
+                    dataSalt = group.RawAccountGroup.DataSalt;
+                }
+                group.RawAccountGroup.PasswordHash
+                    = SecurityProvider.Latest.Hash(group.Password, salt);
+                group.RawAccountGroup.Salt = salt;
+                group.RawAccountGroup.DataSalt = dataSalt;
+            }
+            else
+            {
+                group.RawAccountGroup.PasswordHash = null;
+                group.RawAccountGroup.Salt = null;
+                group.RawAccountGroup.DataSalt = null;
+            }
+            
             var serializedMembers = SecurityProvider.Latest.EncryptAll
             (
                         group.Logins
@@ -92,34 +134,9 @@ namespace kPassKeep.Service
                                       || !rawMembers.ContainsKey(a.Guid))
                              .Select(Persist)
                     ),
-                    group.Password
+                    group.Password, group.RawAccountGroup.DataSalt
             );
 
-            group.RawAccountGroup.FormatVersion = LatestFormat;
-
-            if (!String.IsNullOrEmpty(group.Password))
-            {
-                byte[] salt;
-                if (group.RawAccountGroup.Salt == null || matchAll)
-                {
-                    salt = new byte[32];
-                    var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
-                    rng.GetBytes(salt);
-                    rng.Dispose();
-                }
-                else
-                {
-                    salt = group.RawAccountGroup.Salt;
-                }
-                group.RawAccountGroup.PasswordHash
-                    = SecurityProvider.Latest.Hash(group.Password, salt);
-                group.RawAccountGroup.Salt = salt;
-            }
-            else
-            {
-                group.RawAccountGroup.PasswordHash = null;
-                group.RawAccountGroup.Salt = null;
-            }
             foreach (var e in serializedMembers)
             {
                 group.RawAccountGroup.RawMembers[e.Guid] = e;
@@ -153,6 +170,7 @@ namespace kPassKeep.Service
             ht.descr = group.Description;
             ht.pass = group.RawAccountGroup.PasswordHash;
             ht.salt = group.RawAccountGroup.Salt;
+            ht.datasalt = group.RawAccountGroup.DataSalt;
             ht.version = group.RawAccountGroup.FormatVersion.ToString();
             ht.members = group.RawAccountGroup.RawMembers.Values.ToArray();
 
@@ -269,6 +287,7 @@ namespace kPassKeep.Service
                 g.IsLocked = true;
                 g.RawAccountGroup.PasswordHash = ht.pass;
                 g.RawAccountGroup.Salt = ht.salt;
+                g.RawAccountGroup.DataSalt = ht.datasalt;
             }
             else
             {
@@ -388,6 +407,7 @@ namespace kPassKeep.Service
         public string descr;
         public byte[] pass;
         public byte[] salt;
+        public byte[] datasalt;
         public RawSimpleEntity[] members;
     }
     class SerializableEntity
