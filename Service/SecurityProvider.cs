@@ -89,9 +89,7 @@ namespace kPassKeep.Service
                 }
             }
 
-            Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(password, GetDataSalt(salt));
-
-            var key = pdb.GetBytes(32);
+            var key = Hash(password, GetDataSalt(salt));
 
             foreach (var entity in entities)
             {
@@ -126,9 +124,7 @@ namespace kPassKeep.Service
                 }
             }
 
-            Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(password, GetDataSalt(salt));
-
-            var key = pdb.GetBytes(32);
+            var key = Hash(password, GetDataSalt(salt));
 
             foreach (var entity in entities)
             {
