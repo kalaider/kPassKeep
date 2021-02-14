@@ -69,7 +69,7 @@
                 <ColumnDefinition Width="*"    />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <TextBox Grid.Column="0" Text="{Binding Selected.Password, ElementName=AccountGroupEditControl}" IsEnabled="false" />
+            <TextBox Grid.Column="0" Text="hidden" FontStyle="Italic" IsEnabled="false" />
             <Button Grid.Column="1" Padding="4,0,4,2" Click="EditPasswordButton_Click" IsEnabled="{Binding Selected.IsLocked, ElementName=AccountGroupEditControl, Converter={StaticResource NegateConverter}, FallbackValue=false}" Cursor="Hand">
                 <Image Source="{StaticResource EditImageSource}" Width="16" Height="16" />
             </Button>
