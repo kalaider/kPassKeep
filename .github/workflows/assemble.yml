@@ -6,11 +6,6 @@ on:
     tags: [ "v[0-9]+.[0-9]+" ]
 
 jobs:
-  assemble:
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.eval_version.outputs.version }}
-
   buildNativeImageOnWindows:
     runs-on: windows-latest
     outputs:
