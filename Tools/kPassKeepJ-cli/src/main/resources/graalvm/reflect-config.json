@@ -1,0 +1,80 @@
+[
+  {
+    "name" : "org.kalaider.passkeep.Decryptor$EncryptedGroup",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields": true
+  }, {
+    "name" : "org.kalaider.passkeep.Decryptor$EncryptedEntry",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields": true
+  }, {
+    "name" : "org.kalaider.passkeep.Decryptor$Group",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields": true
+  }, {
+    "name" : "org.kalaider.passkeep.Decryptor$Entry",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields": true
+  }, {
+    "name" : "org.kalaider.passkeep.Decryptor$Login",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields": true
+  }, {
+    "name" : "org.kalaider.passkeep.Decryptor$Target",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields": true
+  }, {
+    "name" : "org.kalaider.passkeep.Decryptor$Account",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields": true
+  }, {
+    "name" : "org.kalaider.passkeep.PrettyFormatter$Group",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields": true
+  }, {
+    "name" : "org.kalaider.passkeep.PrettyFormatter$Login",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields": true
+  }, {
+    "name" : "org.kalaider.passkeep.PrettyFormatter$Target",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields": true
+  }, {
+    "name" : "org.kalaider.passkeep.PrettyFormatter$Account",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields": true
+  }
+]

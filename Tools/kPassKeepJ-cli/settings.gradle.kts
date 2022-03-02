@@ -1,0 +1,2 @@
+rootProject.name = "kPassKeepJ-cli"
+

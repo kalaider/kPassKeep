@@ -1,0 +1,136 @@
+name: Build and release native image
+
+on:
+  push:
+    branches: [ master ]
+    tags: [ "v[0-9]+.[0-9]+" ]
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.eval_version.outputs.version }}
+
+  buildNativeImageOnWindows:
+    runs-on: windows-latest
+    outputs:
+      arch: ${{ runner.arch }}
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: ilammy/msvc-dev-cmd@v1.5.0
+      - uses: microsoft/setup-msbuild@v1
+      - uses: ayltai/setup-graalvm@v1
+        with:
+          java-version: 17
+          graalvm-version: 21.3.0
+          native-image: true
+      - name: Build with Gradle
+        working-directory: Tools/kPassKeepJ-cli
+        run: ./gradlew.bat :nativeBuild
+        env:
+          USERNAME: ${{ github.actor }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: powershell
+      - name: Run UPX
+        uses: crazy-max/ghaction-upx@v1.3.3
+        with:
+          version: latest
+          file: Tools/kPassKeepJ-cli/build/native/nativeBuild/kPassKeepJ-cli.exe
+          args: '-7'
+      - name: Zip files
+        working-directory: Tools/kPassKeepJ-cli/build/native/nativeBuild
+        run: 7z -m0=Copy a kPassKeepJ-cli.zip kPassKeepJ-cli.exe
+        shell: powershell
+      - uses: actions/upload-artifact@v2
+        with:
+          name: kPassKeepJ-cli-win32
+          path: Tools/kPassKeepJ-cli/build/native/nativeBuild/kPassKeepJ-cli.zip
+          retention-days: 1
+
+  buildNativeImageOnLinux:
+    runs-on: ubuntu-latest
+    outputs:
+      arch: ${{ runner.arch }}
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: ayltai/setup-graalvm@v1
+        with:
+          java-version: 17
+          graalvm-version: 21.3.0
+          native-image: true
+      - name: Build with Gradle
+        working-directory: Tools/kPassKeepJ-cli
+        run: ./gradlew :nativeBuild
+        env:
+          USERNAME: ${{ github.actor }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run UPX
+        uses: crazy-max/ghaction-upx@v1.3.3
+        with:
+          version: latest
+          file: Tools/kPassKeepJ-cli/build/native/nativeBuild/kPassKeepJ-cli
+          args: '-7'
+      - name: Tar files
+        working-directory: Tools/kPassKeepJ-cli/build/native/nativeBuild
+        run: tar -cf kPassKeepJ-cli.tar kPassKeepJ-cli
+      - uses: actions/upload-artifact@v2
+        with:
+          name: kPassKeepJ-cli-linux
+          path: Tools/kPassKeepJ-cli/build/native/nativeBuild/kPassKeepJ-cli.tar
+          retention-days: 1
+
+  release:
+    runs-on: ubuntu-latest
+    needs:
+      - buildNativeImageOnWindows
+      - buildNativeImageOnLinux
+    steps:
+      - name: Get current tag name or substitute default
+        id: tag_name
+        run: echo "::set-output name=tag::${{ github.ref_type == 'branch' && 'latest' || github.ref_name }}"
+      - name: Delete previous release
+        if: ${{ github.ref_type == 'branch' }}
+        uses: author/action-rollback@stable
+        continue-on-error: true # job may fail the first time when there is no such tag/branch
+        with:
+          tag: ${{ steps.tag_name.outputs.tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.tag_name.outputs.tag }}
+          release_name: ${{ steps.tag_name.outputs.tag }}
+          draft: false
+          prerelease: ${{ github.ref_type == 'branch' }}
+      # download all artifacts
+      - name: Load Release URL File from release job
+        uses: actions/download-artifact@v2
+      # upload artifacts to release
+      - name: Upload kPassKeepJ-cli-win32
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: kPassKeepJ-cli-win32/kPassKeepJ-cli.zip
+          asset_name: kPassKeepJ-cli-win32-${{ needs.buildNativeImageOnWindows.outputs.arch }}-${{ needs.assemble.outputs.version }}.zip
+          asset_content_type: application/zip
+      - name: Upload kPassKeepJ-cli-linux
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: kPassKeepJ-cli-linux/kPassKeepJ-cli.tar
+          asset_name: kPassKeepJ-cli-linux-${{ needs.buildNativeImageOnLinux.outputs.arch }}-${{ needs.assemble.outputs.version }}.tar
+          asset_content_type: application/x-tar
