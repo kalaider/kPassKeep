@@ -1,4 +1,5 @@
 import org.graalvm.buildtools.gradle.tasks.BuildNativeImageTask
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 
 plugins {
     java
@@ -50,29 +51,31 @@ tasks {
         )
         buildArgs.add("-H:+TraceNativeToolUsage")
         // https://github.com/oracle/graal/issues/4072
-        buildArgs.addAll(
-            listOf(
-                "JDK_LoadSystemLibrary",
-                "JNU_CallMethodByName",
-                "JNU_CallMethodByNameV",
-                "JNU_CallStaticMethodByName",
-                "JNU_ClassString",
-                "JNU_GetEnv",
-                "JNU_GetFieldByName",
-                "JNU_GetStaticFieldByName",
-                "JNU_IsInstanceOfByName",
-                "JNU_NewObjectByName",
-                "JNU_NewStringPlatform",
-                "JNU_SetFieldByName",
-                "JNU_ThrowArrayIndexOutOfBoundsException",
-                "JNU_ThrowByName",
-                "JNU_ThrowIOException",
-                "JNU_ThrowIllegalArgumentException",
-                "JNU_ThrowInternalError",
-                "JNU_ThrowNullPointerException",
-                "JNU_ThrowOutOfMemoryError"
-            ).map { "-H:NativeLinkerOption=/export:$it" }
-        )
+        if (DefaultNativePlatform.getCurrentOperatingSystem().isWindows) {
+            buildArgs.addAll(
+                listOf(
+                    "JDK_LoadSystemLibrary",
+                    "JNU_CallMethodByName",
+                    "JNU_CallMethodByNameV",
+                    "JNU_CallStaticMethodByName",
+                    "JNU_ClassString",
+                    "JNU_GetEnv",
+                    "JNU_GetFieldByName",
+                    "JNU_GetStaticFieldByName",
+                    "JNU_IsInstanceOfByName",
+                    "JNU_NewObjectByName",
+                    "JNU_NewStringPlatform",
+                    "JNU_SetFieldByName",
+                    "JNU_ThrowArrayIndexOutOfBoundsException",
+                    "JNU_ThrowByName",
+                    "JNU_ThrowIOException",
+                    "JNU_ThrowIllegalArgumentException",
+                    "JNU_ThrowInternalError",
+                    "JNU_ThrowNullPointerException",
+                    "JNU_ThrowOutOfMemoryError"
+                ).map { "-H:NativeLinkerOption=/export:$it" }
+            )
+        }
         buildArgs.add("--report-unsupported-elements-at-runtime")
     }
 
