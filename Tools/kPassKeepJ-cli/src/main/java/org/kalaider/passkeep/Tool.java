@@ -1,7 +1,7 @@
 package org.kalaider.passkeep;
 
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.SneakyThrows;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -22,7 +22,23 @@ import static picocli.CommandLine.*;
 )
 public class Tool {
     public enum Format {
-        YAML, JSON
+        YAML, JSON, XML
+    }
+
+    public enum Style {
+        RAW(it -> it),
+        PRETTY(new PrettyFormatter()),
+        KEEPASS_V2(new KeePassFormatter());
+
+        private final Formatter formatter;
+
+        public Formatter getFormatter() {
+            return formatter;
+        }
+
+        Style(Formatter formatter) {
+            this.formatter = formatter;
+        }
     }
 
     @Command(
@@ -33,8 +49,8 @@ public class Tool {
     public static class Decrypt implements Runnable {
         @Parameters(paramLabel = "FILE", description = "Group file")
         private Path groupFilePath;
-        @Option(names = {"-r", "--raw"}, description = "Only print raw decrypted text")
-        private boolean raw = false;
+        @Option(names = {"-s", "--style"}, description = "Output style")
+        private Style style = Style.PRETTY;
         @Option(names = {"-f", "--format"}, description = "Output format")
         private Format format = Format.YAML;
         @Option(names = {"-c", "--charset"}, description = "Charset of the output")
@@ -43,6 +59,8 @@ public class Tool {
         private char[] password;
         @Option(names = {"-o", "--output"}, description = "Output decrypted contents to specific file")
         private Path outputFilePath;
+
+        public static record Root<T>(T value) {}
 
         @Override
         @SneakyThrows
@@ -53,11 +71,14 @@ public class Tool {
                 json = json.substring(1);
             }
             var decrypted = new Decryptor().decrypt(json, password);
-            var formatted = raw ? decrypted : new PrettyFormatter().prettify(decrypted);
+            var formatted = style.getFormatter().format(decrypted);
             var text = switch (format) {
-                case JSON -> new ObjectMapper().writer(new DefaultPrettyPrinter()).writeValueAsString(formatted);
+                case JSON -> new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(formatted);
                 case YAML -> new Yaml(dumperOptions())
                         .dump(new ObjectMapper().convertValue(formatted, Object.class));
+                case XML -> new XmlMapper()
+                        .writerWithDefaultPrettyPrinter()
+                        .writeValueAsString(formatted);
             };
             if (outputFilePath == null) {
                 System.out.write(text.getBytes(charset));

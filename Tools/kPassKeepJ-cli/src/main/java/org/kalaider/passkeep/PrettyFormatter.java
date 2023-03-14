@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.List;
 
-public class PrettyFormatter {
+public class PrettyFormatter implements Formatter {
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     public record Group(
@@ -34,35 +34,35 @@ public class PrettyFormatter {
             String description
     ) { }
 
-    public Group prettify(Decryptor.Group group) {
+    public Object format(Decryptor.Group group) {
         return new Group(
                 group.name(),
                 group.description(),
                 group.entries().values().stream()
                         .filter(Decryptor.Account.class::isInstance)
                         .map(Decryptor.Account.class::cast)
-                        .map(account -> prettify(group, account))
+                        .map(account -> format(group, account))
                         .toList()
         );
     }
 
-    private Account prettify(Decryptor.Group group, Decryptor.Account account) {
+    private Account format(Decryptor.Group group, Decryptor.Account account) {
         return new Account(
                 account.password(),
-                prettify((Decryptor.Login) group.entries().get(account.loginRef())),
-                prettify((Decryptor.Target) group.entries().get(account.targetRef())),
+                format((Decryptor.Login) group.entries().get(account.loginRef())),
+                format((Decryptor.Target) group.entries().get(account.targetRef())),
                 group.description()
         );
     }
 
-    private Login prettify(Decryptor.Login login) {
+    private Login format(Decryptor.Login login) {
         return new Login(
                 login.user(),
                 login.description()
         );
     }
 
-    private Target prettify(Decryptor.Target target) {
+    private Target format(Decryptor.Target target) {
         return new Target(
                 target.title(),
                 target.uri(),

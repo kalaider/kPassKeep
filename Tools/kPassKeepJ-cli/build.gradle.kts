@@ -20,6 +20,7 @@ val generateConfig = configurations.register("generateConfig").get()
 dependencies {
     implementation("info.picocli:picocli:4.6.3")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.13.1")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.1")
     implementation("org.yaml:snakeyaml:1.30")
     generateConfig("info.picocli:picocli-codegen:4.6.3")
 }
