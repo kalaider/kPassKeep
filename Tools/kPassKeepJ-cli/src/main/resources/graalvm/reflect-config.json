@@ -125,5 +125,12 @@
     "allDeclaredMethods" : true,
     "allPublicMethods" : true,
     "allDeclaredFields": true
+  }, {
+    "name" : "org.kalaider.passkeep.KeePassFormatter$BinaryUuidSerializer",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields": true
   }
 ]
