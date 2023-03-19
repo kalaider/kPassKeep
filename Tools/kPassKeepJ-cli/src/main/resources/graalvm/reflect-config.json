@@ -76,5 +76,54 @@
     "allDeclaredMethods" : true,
     "allPublicMethods" : true,
     "allDeclaredFields": true
+  }, {
+    "name" : "org.kalaider.passkeep.KeePassFormatter$Database",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields": true
+  }, {
+    "name" : "org.kalaider.passkeep.KeePassFormatter$Root",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields": true
+  }, {
+    "name" : "org.kalaider.passkeep.KeePassFormatter$Meta",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields": true
+  }, {
+    "name" : "org.kalaider.passkeep.KeePassFormatter$Icon",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields": true
+  }, {
+    "name" : "org.kalaider.passkeep.KeePassFormatter$Group",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields": true
+  }, {
+    "name" : "org.kalaider.passkeep.KeePassFormatter$Entry",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields": true
+  }, {
+    "name" : "org.kalaider.passkeep.KeePassFormatter$StringField",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields": true
   }
 ]
